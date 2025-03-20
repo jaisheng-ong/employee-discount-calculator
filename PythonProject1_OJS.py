@@ -1,5 +1,5 @@
 # -----------------------------------------------------------------
-# Assignment Name:      Project 1
+# Project Name:         Employee Discount System
 # Name:                 Ong Jai Sheng
 # -----------------------------------------------------------------
 
