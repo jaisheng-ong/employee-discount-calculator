@@ -1,6 +1,6 @@
-# Employee Discount Calculator Web Application
+# Employee Discount Calculation System Web Application
 
-This web application is a conversion of the original Python console-based Employee Discount Calculator program. It allows employees to calculate their discounts based on their status (manager or employee), years of employment, and purchase history.
+This web application is a conversion of the original Python console-based Employee Discount Calculation program. It allows employees to calculate their discounts based on their status (manager or employee), years of employment, and purchase history.
 
 ## Features
 
