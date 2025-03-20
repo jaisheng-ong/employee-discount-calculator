@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Discount Calculator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding: 2rem 0;
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container {
+            max-width: 800px;
+        }
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+        }
+        .card-header {
+            background-color: #007bff;
+            color: white;
+            border-radius: 10px 10px 0 0 !important;
+            padding: 15px;
+        }
+        .card-results .card-header {
+            background-color: #28a745;
+        }
+        .btn-primary {
+            background-color: #007bff;
+        }
+        .table td {
+            padding: 12px 15px;
+        }
+        .highlight {
+            background-color: #e8f5e9;
+            font-weight: bold;
+        }
+        #resultsSection {
+            display: none;
+        }
+        .employee-info {
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="text-center">Employee Discount Calculator</h2>
+            </div>
+            <div class="card-body">
+                <div id="errorAlert" class="alert alert-danger" style="display: none;"></div>
+                
+                <form id="discountForm">
+                    <div class="mb-3">
+                        <label for="employeeStatus" class="form-label">Are You A Manager Or Employee?</label>
+                        <select class="form-select" id="employeeStatus" required>
+                            <option value="" selected disabled>Select your role</option>
+                            <option value="m">Manager (M)</option>
+                            <option value="e">Employee (E)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="yearsEmployed" class="form-label">Number of Years Employed</label>
+                        <input type="number" class="form-control" id="yearsEmployed" min="1" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="totalPreviousPurchases" class="form-label">Total Amount of Previous Purchases before Discount ($)</label>
+                        <input type="number" class="form-control" id="totalPreviousPurchases" min="0" step="0.01" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="totalPurchase" class="form-label">Total of Today's Purchase ($)</label>
+                        <input type="number" class="form-control" id="totalPurchase" min="0" step="0.01" required>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Calculate Discount</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div id="resultsSection" class="card card-results">
+            <div class="card-header">
+                <h2 class="text-center">Discount Calculation Results</h2>
+            </div>
+            <div class="card-body">
+                <table class="table table-hover">
+                    <tbody>
+                        <tr>
+                            <td>Employee Discount Percentage</td>
+                            <td class="text-end" id="employeePercentage">0%</td>
+                        </tr>
+                        <tr>
+                            <td>Year-To-Date Amount of Discount in Dollars</td>
+                            <td class="text-end" id="ytdAmountDiscount">$0.00</td>
+                        </tr>
+                        <tr>
+                            <td>Total Purchase Today before Discount</td>
+                            <td class="text-end" id="totalPurchaseToday">$0.00</td>
+                        </tr>
+                        <tr>
+                            <td>Discount Allowed For This Purchase</td>
+                            <td class="text-end" id="employeeDiscount">$0.00</td>
+                        </tr>
+                        <tr class="highlight">
+                            <td>Total Amount With Discount</td>
+                            <td class="text-end" id="totalWithDiscount">$0.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="d-grid gap-2 mt-4">
+                    <button id="calculateAnotherBtn" class="btn btn-primary">Calculate Another Discount</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h3 class="text-center">Daily Totals</h3>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-6">
+                        <p><strong>Total before Discount for the day:</strong></p>
+                        <p class="fs-4" id="dayTotalBeforeDiscount">$0.00</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Total after Discount applied:</strong></p>
+                        <p class="fs-4" id="dayTotalAfterDiscount">$0.00</p>
+                    </div>
+                </div>
+                <div class="d-grid gap-2 mt-3">
+                    <button id="resetDailyTotalsBtn" class="btn btn-warning">Reset Daily Totals</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Store daily totals
+        let dayTotalBeforeDiscount = 0;
+        let dayTotalAfterDiscount = 0;
+        
+        // Format currency
+        function formatCurrency(amount) {
+            return '$' + amount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+        }
+        
+        // Determine Manager Discount Percentage
+        function determineManagerDiscountPercentage(yearsEmployed) {
+            if (yearsEmployed > 15) {
+                return 0.4;
+            } else if (yearsEmployed >= 11 && yearsEmployed <= 15) {
+                return 0.35;
+            } else if (yearsEmployed >= 7 && yearsEmployed <= 10) {
+                return 0.3;
+            } else if (yearsEmployed >= 4 && yearsEmployed <= 6) {
+                return 0.24;
+            } else {
+                return 0.2;
+            }
+        }
+        
+        // Determine Employee Discount Percentage
+        function determineEmployeeDiscountPercentage(yearsEmployed) {
+            if (yearsEmployed > 15) {
+                return 0.3;
+            } else if (yearsEmployed >= 11 && yearsEmployed <= 15) {
+                return 0.25;
+            } else if (yearsEmployed >= 7 && yearsEmployed <= 10) {
+                return 0.2;
+            } else if (yearsEmployed >= 4 && yearsEmployed <= 6) {
+                return 0.14;
+            } else {
+                return 0.1;
+            }
+        }
+        
+        // Calculate Employee Discount
+        function calculateEmployeeDiscount(ytdDiscount, currentDiscount) {
+            if (ytdDiscount > 200) {
+                return 0;
+            } else if ((ytdDiscount + currentDiscount) < 200) {
+                return currentDiscount;
+            } else if ((ytdDiscount + currentDiscount) > 200) {
+                return (ytdDiscount + currentDiscount) - 200;
+            }
+        }
+        
+        // Form submission
+        document.getElementById('discountForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get form values
+            const employeeStatus = document.getElementById('employeeStatus').value.toLowerCase();
+            const yearsEmployed = parseInt(document.getElementById('yearsEmployed').value);
+            const totalPreviousPurchases = parseFloat(document.getElementById('totalPreviousPurchases').value);
+            const totalPurchase = parseFloat(document.getElementById('totalPurchaseToday').value || document.getElementById('totalPurchase').value);
+            
+            // Validate inputs
+            if (!employeeStatus) {
+                showError("Please select your role (Manager or Employee)");
+                return;
+            }
+            
+            if (isNaN(yearsEmployed) || yearsEmployed <= 0) {
+                showError("Number of Years Employed Must Be Greater than 0");
+                return;
+            }
+            
+            if (isNaN(totalPreviousPurchases) || totalPreviousPurchases < 0) {
+                showError("Total Amount of Previous Purchase before Discount Must Be Greater than Or Equal To 0");
+                return;
+            }
+            
+            if (isNaN(totalPurchase) || totalPurchase < 0) {
+                showError("Total of Today's Purchase Must Be Greater than Or Equal To 0");
+                return;
+            }
+            
+            // Calculate discount
+            let employeePercentage;
+            if (employeeStatus === 'm') {
+                employeePercentage = determineManagerDiscountPercentage(yearsEmployed);
+            } else if (employeeStatus === 'e') {
+                employeePercentage = determineEmployeeDiscountPercentage(yearsEmployed);
+            } else {
+                showError("Please Enter 'M' or 'E' for Employee Status");
+                return;
+            }
+            
+            const ytdAmountDiscount = totalPreviousPurchases * employeePercentage;
+            const totalPurchaseToday = totalPurchase;
+            const currentDiscount = totalPurchaseToday * employeePercentage;
+            const employeeDiscount = calculateEmployeeDiscount(ytdAmountDiscount, currentDiscount);
+            const totalWithDiscount = totalPurchaseToday - employeeDiscount;
+            
+            // Update daily totals
+            dayTotalBeforeDiscount += totalPurchaseToday;
+            dayTotalAfterDiscount += totalWithDiscount;
+            
+            // Update the results
+            document.getElementById('employeePercentage').textContent = Math.round(employeePercentage * 100) + '%';
+            document.getElementById('ytdAmountDiscount').textContent = formatCurrency(ytdAmountDiscount);
+            document.getElementById('totalPurchaseToday').textContent = formatCurrency(totalPurchaseToday);
+            document.getElementById('employeeDiscount').textContent = formatCurrency(employeeDiscount);
+            document.getElementById('totalWithDiscount').textContent = formatCurrency(totalWithDiscount);
+            
+            // Update daily totals display
+            document.getElementById('dayTotalBeforeDiscount').textContent = formatCurrency(dayTotalBeforeDiscount);
+            document.getElementById('dayTotalAfterDiscount').textContent = formatCurrency(dayTotalAfterDiscount);
+            
+            // Show results section
+            document.getElementById('resultsSection').style.display = 'block';
+        });
+        
+        // Show error message
+        function showError(message) {
+            const errorAlert = document.getElementById('errorAlert');
+            errorAlert.textContent = message;
+            errorAlert.style.display = 'block';
+            
+            // Hide error after 3 seconds
+            setTimeout(() => {
+                errorAlert.style.display = 'none';
+            }, 3000);
+        }
+        
+        // Calculate another discount
+        document.getElementById('calculateAnotherBtn').addEventListener('click', function() {
+            document.getElementById('resultsSection').style.display = 'none';
+            document.getElementById('discountForm').reset();
+        });
+        
+        // Reset daily totals
+        document.getElementById('resetDailyTotalsBtn').addEventListener('click', function() {
+            dayTotalBeforeDiscount = 0;
+            dayTotalAfterDiscount = 0;
+            document.getElementById('dayTotalBeforeDiscount').textContent = formatCurrency(0);
+            document.getElementById('dayTotalAfterDiscount').textContent = formatCurrency(0);
+        });
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 
