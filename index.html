@@ -16,11 +16,11 @@
             --border-color: rgba(0,0,0,.125);
         }
         
-        [data-theme="gray"] {
-            --bg-color: #343a40;
-            --text-color: #e9ecef;
-            --card-bg: #495057;
-            --input-bg: #6c757d;
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --text-color: #f8f9fa;
+            --card-bg: #1e1e1e;
+            --input-bg: #2d2d2d;
             --input-text: #f8f9fa;
             --border-color: rgba(255,255,255,.125);
         }
@@ -99,12 +99,22 @@
             right: 20px;
             z-index: 1000;
         }
+        
+        #themeToggle {
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
     </style>
 </head>
 <body>
     <div class="theme-switch">
         <button id="themeToggle" class="btn btn-outline-primary">
-            <i class="bi bi-moon-fill"></i> Switch Theme
+            <i class="bi bi-moon-fill"></i>
         </button>
     </div>
 
@@ -364,7 +374,7 @@
         // Toggle theme when button is clicked
         themeToggle.addEventListener('click', function() {
             const currentTheme = htmlElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'light' ? 'gray' : 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
             
             htmlElement.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
@@ -374,10 +384,10 @@
         
         // Update the theme toggle button icon and text
         function updateThemeToggleButton(theme) {
-            if (theme === 'gray') {
-                themeToggle.innerHTML = '<i class="bi bi-sun-fill"></i> Light Theme';
+            if (theme === 'dark') {
+                themeToggle.innerHTML = '<i class="bi bi-sun-fill"></i>';
             } else {
-                themeToggle.innerHTML = '<i class="bi bi-moon-fill"></i> Gray Theme';
+                themeToggle.innerHTML = '<i class="bi bi-moon-fill"></i>';
             }
         }
     </script>
