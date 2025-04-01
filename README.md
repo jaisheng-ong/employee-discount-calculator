@@ -2,6 +2,8 @@
 
 This web application is a conversion of the original Python console-based Employee Discount Calculation program. It allows employees to calculate their discounts based on their status (manager or employee), years of employment, and purchase history.
 
+Link: https://jaisheng-ong.github.io/employee-discount-calculator/
+
 ## Features
 
 - User-friendly web interface
